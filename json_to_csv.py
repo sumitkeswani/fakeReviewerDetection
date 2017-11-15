@@ -8,8 +8,8 @@ import json
 import pandas as pd
 import gzip
 
-file_name = "./reviews_Books_5.json"
-csv_file = "./reviews_books.csv"
+file_name = "/Users/sanyachaba/Desktop/GATECH/DVA/PROJECT/DATA/reviews_Musical_Instruments_5.json.gz"
+csv_file = "/Users/sanyachaba/Desktop/GATECH/DVA/PROJECT/DATA/Musical_Instruments_5.csv"
 def parse(path):
   g = gzip.open(path, 'rb')
   for l in g:
@@ -25,20 +25,3 @@ def getDF(path):
 
 df = getDF(file_name)
 df.to_csv(csv_file, sep="\t")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
