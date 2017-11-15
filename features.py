@@ -33,7 +33,7 @@ def rating_deviation(grouped_df):
 
 if __name__ == '__main__':
 
-    csv_file = "/Users/sanyachaba/Desktop/GATECH/DVA/PROJECT/DATA/Musical_Instruments_5.csv"
+    csv_file = "./raw_data.csv"
 
     # input dataframe
     music_df = pd.DataFrame.from_csv(csv_file, sep="\t")
@@ -51,5 +51,7 @@ if __name__ == '__main__':
     # print grouped_df
 
     ans = rating_deviation(grouped_df)
-    print ans['rating_deviation']
+    grouped_df = ans
+
+    print grouped_df["rating_deviation"]
 
