@@ -5,6 +5,19 @@ This file will be used to calculate features for a reviewer
 import pandas as pd
 from collections import defaultdict
 
+def kde(grouped_df):
+	product_ratings_list = []
+
+	for index, row in grouped_df.iterrows():
+		for index_list, val in enumerate(row['asin']):
+			product_ratings_list.append([val, grouped_df.ix[index,'overall'][index_list], grouped_df.ix[index,'reviewTime'][index_list]])
+	product_ratings = pd.DataFrame(product_ratings_list, columns=["product_id", "rating", "date"])
+	grouped_pr = pd.DataFrame(columns=product_ratings.columns.values)
+	grouped_pr["rating"] = product_ratings.groupby("product_id")["rating"].apply(list)
+	grouped_pr["date"] = product_ratings.groupby("product_id")["date"].apply(list)
+	grouped_pr.drop('product_id', axis=1, inplace=True)
+	return grouped_pr
+
 #creates a seperate column "rating_deviation" in df_grouped - saves the rating deviation for each reviewer
 def rating_deviation(grouped_df):
     average = lambda n : sum(n) / len(n)
@@ -50,8 +63,9 @@ if __name__ == '__main__':
         grouped_df[col] = music_df.groupby("reviewerID")[col].apply(list)
     # print grouped_df
 
-    ans = rating_deviation(grouped_df)
-    grouped_df = ans
+    # ans = rating_deviation(grouped_df)
+    # grouped_df = ans
 
-    print grouped_df["rating_deviation"]
+    # print grouped_df['rating_deviation']
+    print kde(grouped_df)
 
