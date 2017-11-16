@@ -4,6 +4,10 @@ This file will be used to calculate features for a reviewer
 
 import pandas as pd
 from collections import defaultdict
+from sklearn.neighbors.kde import KernelDensity
+import numpy as np
+from datetime import datetime
+from time import mktime
 
 def kde(grouped_df):
 	product_ratings_list = []
@@ -16,7 +20,19 @@ def kde(grouped_df):
 	grouped_pr["rating"] = product_ratings.groupby("product_id")["rating"].apply(list)
 	grouped_pr["date"] = product_ratings.groupby("product_id")["date"].apply(list)
 	grouped_pr.drop('product_id', axis=1, inplace=True)
-	return grouped_pr
+	
+
+	#Now grouped_pr contains product_id, [list of ratings], [list of dates]
+	product_x = grouped_pr.head(1)
+	
+	date = product_x.ix[0,'date']
+	for i in range(len(date)):
+		date[i] = [(datetime.strptime(date[i], '%m %d, %Y').date()).toordinal()]
+	date.sort()
+	date = np.array(date)
+	kde = KernelDensity(kernel='gaussian', bandwidth=1).fit(date)
+	print kde.score_samples(date)
+
 
 #creates a seperate column "rating_deviation" in df_grouped - saves the rating deviation for each reviewer
 def rating_deviation(grouped_df):
