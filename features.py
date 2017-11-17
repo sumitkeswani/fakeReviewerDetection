@@ -72,7 +72,25 @@ def kde(grouped_df):
 
     return grouped_pr
 
-
+def productFeature(gdf):    
+	prodf= gdf['asin'].to_frame()
+	prodf.reset_index(level=0,inplace=True)
+	rowiter=prodf.iterrows()
+	total=[]
+	for index,row in rowiter:
+		nextrowiter=prodf.iloc[index+1:,:].iterrows()
+		for index1,row1 in nextrowiter:
+			commonelem=list(set(row['asin']).intersection(set(row1['asin'])))
+			commelemlist=[]
+			commelemlist.append(row['reviewerID'])
+			commelemlist.append(row1['reviewerID'])
+			commelemlist.append(list(commonelem))#,commonelem[0])
+			total.append(commelemlist)
+	pdf=pd.DataFrame(total)	
+	#print pdf
+	#csv_file1 = "/home/anita/Documents/dva dataset/common_products.csv"
+	#pdf.to_csv(csv_file1, sep="\t")
+    return pdf
 #creates a seperate column "rating_deviation" in df_grouped - saves the rating deviation for each reviewer
 def rating_deviation(grouped_df):
     average = lambda n : sum(n) / len(n)
