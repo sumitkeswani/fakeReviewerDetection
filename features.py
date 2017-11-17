@@ -38,7 +38,14 @@ def kde(grouped_df):
 
     kde_df = (pd.DataFrame(kde_list)).transpose()
     kde_df.columns = p_id
-    kde_df = kde_df*-1
+
+    intersection = []
+    for product_kde in kde_df:
+        temp_df = kde_df[kde_df[product_kde]>-3][product_kde]
+        intersection.append(temp_df.index.tolist())
+
+    int_df = (pd.DataFrame(intersection)).transpose()
+    int_df.columns = p_id
 
 
 #creates a seperate column "rating_deviation" in df_grouped - saves the rating deviation for each reviewer
