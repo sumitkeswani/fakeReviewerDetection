@@ -7,31 +7,38 @@ from collections import defaultdict
 from sklearn.neighbors.kde import KernelDensity
 import numpy as np
 from datetime import datetime
-from time import mktime
 
 def kde(grouped_df):
-	product_ratings_list = []
+    product_ratings_list = []
 
-	for index, row in grouped_df.iterrows():
-		for index_list, val in enumerate(row['asin']):
-			product_ratings_list.append([val, grouped_df.ix[index,'overall'][index_list], grouped_df.ix[index,'reviewTime'][index_list]])
-	product_ratings = pd.DataFrame(product_ratings_list, columns=["product_id", "rating", "date"])
-	grouped_pr = pd.DataFrame(columns=product_ratings.columns.values)
-	grouped_pr["rating"] = product_ratings.groupby("product_id")["rating"].apply(list)
-	grouped_pr["date"] = product_ratings.groupby("product_id")["date"].apply(list)
-	grouped_pr.drop('product_id', axis=1, inplace=True)
-	
+    for index, row in grouped_df.iterrows():
+        for index_list, val in enumerate(row['asin']):
+            product_ratings_list.append([val, grouped_df.ix[index,'overall'][index_list], grouped_df.ix[index,'reviewTime'][index_list]])
+    product_ratings = pd.DataFrame(product_ratings_list, columns=["product_id", "rating", "date"])
+    grouped_pr = pd.DataFrame(columns=product_ratings.columns.values)
+    grouped_pr["rating"] = product_ratings.groupby("product_id")["rating"].apply(list)
+    grouped_pr["date"] = product_ratings.groupby("product_id")["date"].apply(list)
+    grouped_pr.drop('product_id', axis=1, inplace=True)
 
-	#Now grouped_pr contains product_id, [list of ratings], [list of dates]
-	product_x = grouped_pr.head(1)
-	
-	date = product_x.ix[0,'date']
-	for i in range(len(date)):
-		date[i] = [(datetime.strptime(date[i], '%m %d, %Y').date()).toordinal()]
-	date.sort()
-	date = np.array(date)
-	kde = KernelDensity(kernel='gaussian', bandwidth=1).fit(date)
-	print kde.score_samples(date)
+
+    #Now grouped_pr contains product_id, [list of ratings], [list of dates]
+
+    kde_list = []
+    p_id = []
+
+    for index, row in grouped_pr.iterrows():
+        p_id.append(index)
+        date = grouped_pr.ix[index,'date']
+        for i in range(len(date)):
+            date[i] = [datetime.strptime(date[i], '%m %d, %Y').date().toordinal()]
+        date.sort()
+        date = np.array(date)
+        kde = KernelDensity(kernel='gaussian', bandwidth=1).fit(date)
+        kde_list.append(kde.score_samples(date))
+
+    kde_df = (pd.DataFrame(kde_list)).transpose()
+    kde_df.columns = p_id
+    kde_df = kde_df*-1
 
 
 #creates a seperate column "rating_deviation" in df_grouped - saves the rating deviation for each reviewer
