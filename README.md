@@ -7,8 +7,8 @@ features.py -> function kde():
 
   #output: grouped_pr -> product wise grouped data including burst periods in ordinal form:
   
-  product_id   ratings                        date                                        bursts                    
-  5555991584  [5.0, 5.0, 4.0, 5.0, 5.0, 5.0]  [[730243], [730261], [730267], [730411]]    [[[730243], [735079]]] 
+  product_id, ratings, date, bursts                    
+  5555991584, [5.0, 5.0, 4.0, 5.0, 5.0, 5.0], [[730243], [730261], [730267], [730411]], [[[730243], [735079]]] 
 
 
 
