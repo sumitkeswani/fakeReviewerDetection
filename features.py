@@ -28,11 +28,10 @@ def kde(grouped_df):
 
     for index, row in grouped_pr.iterrows():
         p_id.append(index)
-        date = grouped_pr.ix[index,'date']
-        for i in range(len(date)):
-            date[i] = [datetime.strptime(date[i], '%m %d, %Y').date().toordinal()]
-        date.sort()
-        date = np.array(date)
+        for i in range(len(grouped_pr.ix[index,'date'])):
+            grouped_pr.ix[index, 'date'][i] = [datetime.strptime(grouped_pr.ix[index,'date'][i], '%m %d, %Y').date().toordinal()]
+        grouped_pr.ix[index, 'date'].sort()
+        date = np.array(grouped_pr.ix[index, 'date'])
         kde = KernelDensity(kernel='gaussian', bandwidth=1).fit(date)
         kde_list.append(kde.score_samples(date))
 
