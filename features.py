@@ -7,6 +7,9 @@ from collections import defaultdict
 from sklearn.neighbors.kde import KernelDensity
 import numpy as np
 from datetime import datetime
+from difflib import SequenceMatcher
+
+average = lambda n : sum(n) / len(n)
 
 def kde(grouped_df):
     product_ratings_list = []
@@ -69,10 +72,30 @@ def kde(grouped_df):
                 ini = a[i+1]
 
         grouped_pr.ix[column,'bursts'] = b
-
     return grouped_pr
 
-def productFeature(gdf):    
+def reviewer_bursts(grouped_df, grouped_pr):
+    prods_df = grouped_df[['asin', 'reviewTime']]
+    date_conv = lambda row: [datetime.strptime(r, '%m %d, %Y').date().toordinal() for r in row.reviewTime]
+    prods_df['ordinal'] = prods_df.apply(date_conv, axis=1)
+    prod_df = prods_df.drop('reviewTime', axis=1)
+    prods_df = prods_df.reset_index()
+
+    grouped_pr = grouped_pr.drop(['rating', 'date'], axis=1)
+    calc_count = lambda row: sum([sum([1 for b in grouped_pr['bursts'][prod] if o_time >= b[0][0] and o_time <= b[1][0]]) \
+                                if grouped_pr['bursts'].get(prod) else 0 \
+                                for prod, o_time in zip(row.asin,row.ordinal)])
+    prods_df['count'] = prods_df.apply(calc_count, axis=1)
+    return prods_df
+
+def burst_ratio(prods_df):
+    find_burst = lambda row: float(row['count'])/len(row.ordinal)
+    prods_df['burst_ratio'] = prods_df.apply(find_burst, axis=1)
+    prods_df = prods_df.set_index('reviewerID')
+    return prods_df
+
+
+def productFeature(gdf):
 	prodf= gdf['asin'].to_frame()
 	prodf.reset_index(level=0,inplace=True)
 	rowiter=prodf.iterrows()
@@ -86,14 +109,15 @@ def productFeature(gdf):
 			commelemlist.append(row1['reviewerID'])
 			commelemlist.append(list(commonelem))#,commonelem[0])
 			total.append(commelemlist)
-	pdf=pd.DataFrame(total)	
+	pdf=pd.DataFrame(total)
+        return pdf
 	#print pdf
 	#csv_file1 = "/home/anita/Documents/dva dataset/common_products.csv"
 	#pdf.to_csv(csv_file1, sep="\t")
-    return pdf
+
+
 #creates a seperate column "rating_deviation" in df_grouped - saves the rating deviation for each reviewer
 def rating_deviation(grouped_df):
-    average = lambda n : sum(n) / len(n)
     average_rating_product = defaultdict(list)
     overall_df = grouped_df['overall'].to_frame()
 
@@ -117,6 +141,15 @@ def rating_deviation(grouped_df):
 
     return grouped_df
 
+def text_similarity(grouped_df):
+    reviews_df  = grouped_df['reviewText'].to_frame()
+    sim =  lambda row: average([SequenceMatcher(None, r1, r2).ratio() for r1 in row.reviewText for r2 in row.reviewText\
+                        if r1 != r2])
+    reviews_df['similarity_index'] = reviews_df.apply(sim, axis =1)
+    grouped_df['similarity_index'] = reviews_df['similarity_index']
+
+    return grouped_df
+
 if __name__ == '__main__':
 
     csv_file = "./raw_data.csv"
@@ -133,11 +166,16 @@ if __name__ == '__main__':
     for col in music_df.columns.values:
         if (col == "reviewerID"): continue
         grouped_df[col] = music_df.groupby("reviewerID")[col].apply(list)
+
+    grouped_df = grouped_df[:500]
     # print grouped_df
 
     # ans = rating_deviation(grouped_df)
     # grouped_df = ans
 
     # print grouped_df['rating_deviation']
-    print kde(grouped_df)
+    #grouped_pr = kde(grouped_df)
+    #prods_df = reviewer_bursts(grouped_df, grouped_pr)
+    #prods_df = burst_ratio(prods_df)
 
+    print text_similarity(grouped_df)
