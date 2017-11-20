@@ -96,35 +96,32 @@ def reviewer_bursts(grouped_df, grouped_pr):
     calc_count = lambda row: sum([sum([1 for b in grouped_pr['bursts'][prod] if o_time >= b[0][0] and o_time <= b[1][0]]) \
                                 if grouped_pr['bursts'].get(prod) else 0 \
                                 for prod, o_time in zip(row.asin,row.ordinal)])
-    prods_df['count'] = prods_df.apply(calc_count, axis=1)
+    prods_df['burst_count'] = prods_df.apply(calc_count, axis=1)
     return prods_df
 
 def burst_ratio(prods_df):
-    find_burst = lambda row: float(row['count'])/len(row.ordinal)
+    find_burst = lambda row: float(row['burst_count'])/len(row.ordinal)
     prods_df['burst_ratio'] = prods_df.apply(find_burst, axis=1)
     prods_df = prods_df.set_index('reviewerID')
     return prods_df
 
 
 def productFeature(gdf):
-	prodf= gdf['asin'].to_frame()
-	prodf.reset_index(level=0,inplace=True)
-	rowiter=prodf.iterrows()
-	total=[]
-	for index,row in rowiter:
-		nextrowiter=prodf.iloc[index+1:,:].iterrows()
-		for index1,row1 in nextrowiter:
-			commonelem=list(set(row['asin']).intersection(set(row1['asin'])))
-			commelemlist=[]
-			commelemlist.append(row['reviewerID'])
-			commelemlist.append(row1['reviewerID'])
-			commelemlist.append(list(commonelem))#,commonelem[0])
-			total.append(commelemlist)
-	pdf=pd.DataFrame(total)
-        return pdf
-	#print pdf
-	#csv_file1 = "/home/anita/Documents/dva dataset/common_products.csv"
-	#pdf.to_csv(csv_file1, sep="\t")
+    prodf= gdf['asin'].to_frame()
+    prodf.reset_index(level=0,inplace=True)
+    rowiter=prodf.iterrows()
+    total=[]
+    for index,row in rowiter:
+        nextrowiter=prodf.iloc[index+1:,:].iterrows()
+        for index1,row1 in nextrowiter:
+            commonelem=list(set(row['asin']).intersection(set(row1['asin'])))
+            commelemlist=[]
+            commelemlist.append(row['reviewerID'])
+            commelemlist.append(row1['reviewerID'])
+            commelemlist.append(len(list(commonelem)))#,commonelem[0])
+            total.append(commelemlist)
+    pdf=pd.DataFrame(total)
+    return pdf
 
 
 #creates a seperate column "rating_deviation" in df_grouped - saves the rating deviation for each reviewer
@@ -161,8 +158,7 @@ def text_similarity(grouped_df):
 
     return grouped_df
 
-if __name__ == '__main__':
-
+def compute_features():
     csv_file = "./raw_data.csv"
 
     # input dataframe
@@ -179,14 +175,25 @@ if __name__ == '__main__':
         grouped_df[col] = music_df.groupby("reviewerID")[col].apply(list)
 
     grouped_df = grouped_df[:500]
-    # print grouped_df
 
-    # ans = rating_deviation(grouped_df)
-    # grouped_df = ans
+    # Feature 1: Rating Deviation
+    grouped_df = rating_deviation(grouped_df)
 
-    # print grouped_df['rating_deviation']
-    #grouped_pr = kde(grouped_df)
-    #prods_df = reviewer_bursts(grouped_df, grouped_pr)
-    #prods_df = burst_ratio(prods_df)
+    # Feature 2: Burst Review Ratio
+    grouped_pr = kde(grouped_df)
+    prods_df = reviewer_bursts(grouped_df, grouped_pr)
+    prods_df = burst_ratio(prods_df)
 
-    print text_similarity(grouped_df)
+    # Feature 3: Text Similarity
+    grouped_df = text_similarity(grouped_df)
+
+    # Feature 4: List of products : grouped_df["products"]
+
+    # Feature 5: Average helpfulness
+
+    # Feature 6: Burst Time Frames
+    return grouped_df
+
+
+if __name__ == '__main__':
+    compute_features()
