@@ -109,7 +109,6 @@ def reviewer_bursts(grouped_df, grouped_pr):
                                 for prod, o_time in zip(row.asin,row.ordinal)]]
     prods_df['burst_count'] = prods_df.apply(calc_count, axis=1)
     prods_df['burst_ids'] = prods_df.apply(bursts, axis=1)
-    print prods_df
     return prods_df
 
 def burst_ratio(prods_df):
