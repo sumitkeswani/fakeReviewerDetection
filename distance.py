@@ -17,10 +17,12 @@ def heurtistic_1_and_2(reviewers_df):
         nextrowiter = reviewers_df.iloc[index_reviewer1 + 1:, :].iterrows()
         for index_reviewer2, row_reviewer2 in nextrowiter:
             commonelem = list(set(row_reviewer1['asin']).intersection(set(row_reviewer2['asin'])))
+            commonelem_burst = list(set(row_reviewer1['burst_ids']).intersection(set(row_reviewer2['burst_ids'])))
             reviwer_pair = []
             reviwer_pair.append(row_reviewer1['reviewerID'])
             reviwer_pair.append(row_reviewer2['reviewerID'])
             reviwer_pair.append(len(list(commonelem)))  # ,commonelem[0])
+            reviwer_pair.append(len(list(commonelem_burst)))
 
             AB = reviewers_df.ix[index_reviewer1,'burst_ratio'] * reviewers_df.ix[index_reviewer2,'burst_ratio'] \
             + reviewers_df.ix[index_reviewer1, 'similarity_index'] * reviewers_df.ix[index_reviewer2, 'similarity_index'] \
@@ -44,13 +46,14 @@ def heurtistic_1_and_2(reviewers_df):
 def heurtistic_3():
     pass
 
-def compute_distance(reviewers_df):
+def compute_distance(reviewers_df, alpha, beta, gamma):
     #graph_df with reviewer_1, reviewer_2 and h_1 added
     graph_df = heurtistic_1_and_2(reviewers_df)
+    graph_df['final_distance'] = ((alpha * graph_df['']) + (beta * graph_df['']) + (gamma *  graph_df[''])) / (alpha + beta + gamma)
     return graph_df
 
 
 if __name__ == '__main__':
     reviewers_df = compute_features()
-    graph_df = compute_distance(reviewers_df)
+    graph_df = compute_distance(reviewers_df, 1, 1, 1)
     print graph_df
