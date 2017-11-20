@@ -108,7 +108,7 @@ def burst_ratio(prods_df):
 
 def productFeature(gdf):
     prodf= gdf['asin'].to_frame()
-    prodf.reset_index(level=0,inplace=True)
+    prodf.reset_index(level=0, inplace=True)
     rowiter=prodf.iterrows()
     total=[]
     for index,row in rowiter:
@@ -122,6 +122,7 @@ def productFeature(gdf):
             total.append(commelemlist)
     pdf=pd.DataFrame(total)
     return pdf
+
 
 
 #creates a seperate column "rating_deviation" in df_grouped - saves the rating deviation for each reviewer
@@ -160,7 +161,6 @@ def text_similarity(grouped_df):
 
 # Pranathi's code
 def average_helpfulness(grouped_df):
-    grouped_df["avg_helpfulness"] = 0.0
     for index, reviewer in grouped_df.iterrows():
         # print grouped_df.index[i]
         numer = 0.0
@@ -174,6 +174,7 @@ def average_helpfulness(grouped_df):
         else:
             avg_helpfulness = numer/denom
         grouped_df.ix[index, 'avg_helpfulness'] = avg_helpfulness
+
     return grouped_df
 
 def compute_features():
@@ -192,26 +193,29 @@ def compute_features():
         if (col == "reviewerID"): continue
         grouped_df[col] = music_df.groupby("reviewerID")[col].apply(list)
 
-    grouped_df = grouped_df[:500]
+    grouped_df = grouped_df[:50]
+    print productFeature(grouped_df)
 
-    # Feature 1: Rating Deviation
-    grouped_df = rating_deviation(grouped_df)
+    # # Feature 1: Rating Deviation
+    # grouped_df = rating_deviation(grouped_df)
+    #
+    # # Feature 2: Burst Review Ratio
+    # grouped_pr = kde(grouped_df)
+    # prods_df = reviewer_bursts(grouped_df, grouped_pr)
+    # prods_df = burst_ratio(prods_df)
+    # grouped_df['burst_ratio'] = prods_df['burst_ratio']
+    #
+    # # Feature 3: Text Similarity
+    # grouped_df = text_similarity(grouped_df)
+    #
+    # # Feature 4: List of products : grouped_df["products"]
+    #
+    # # Feature 5: Average helpfulness
+    # grouped_df = average_helpfulness(grouped_df)
+    #
+    # # Feature 6: Burst Time Frames
 
-    # Feature 2: Burst Review Ratio
-    grouped_pr = kde(grouped_df)
-    prods_df = reviewer_bursts(grouped_df, grouped_pr)
-    prods_df = burst_ratio(prods_df)
-
-    # Feature 3: Text Similarity
-    grouped_df = text_similarity(grouped_df)
-
-    # Feature 4: List of products : grouped_df["products"]
-
-    # Feature 5: Average helpfulness
-    grouped_df = average_helpfulness(grouped_df)
-
-    # Feature 6: Burst Time Frames
-    return grouped_df['burst_ratio', 'similarity_index', 'asin', 'avg_helpfulness', 'burst_ratio']
+    return grouped_df
 
 
 if __name__ == '__main__':
