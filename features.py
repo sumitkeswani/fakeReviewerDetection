@@ -68,6 +68,8 @@ def kde(grouped_df):
     grouped_pr['bursts'] = grouped_pr['date']
     for column in df_indices:
         b = []
+        b_id = []
+        id = 0
         a = pd.to_numeric(df_indices[column].dropna())
         if (len(a) == 0):
             grouped_pr.ix[column, 'bursts'] = []
@@ -77,15 +79,21 @@ def kde(grouped_df):
 
             if (i is (len(a) - 1)) :
                 b.append([grouped_pr.ix[column,"date"][int(ini)],grouped_pr.ix[column,"date"][int(a[i])]])
+                b_id.append(column + '-' + str(id))
+                id += 1
 
             elif ((int(a[i]+1) is not int(a[i+1]))):
                 b.append([grouped_pr.ix[column,"date"][int(ini)],grouped_pr.ix[column,"date"][int(a[i])]])
+                b_id.append(column + '-' + str(id))
+                id += 1
                 ini = a[i+1]
 
         grouped_pr.ix[column,'bursts'] = b
+        grouped_pr.ix[column, 'bursts_ids'] = b_id
     return grouped_pr
 
 def reviewer_bursts(grouped_df, grouped_pr):
+    #Adding ordinal column
     prods_df = grouped_df[['asin', 'reviewTime']]
     date_conv = lambda row: [datetime.strptime(r, '%m %d, %Y').date().toordinal() for r in row.reviewTime]
     prods_df['ordinal'] = prods_df.apply(date_conv, axis=1)
@@ -96,7 +104,12 @@ def reviewer_bursts(grouped_df, grouped_pr):
     calc_count = lambda row: sum([sum([1 for b in grouped_pr['bursts'][prod] if o_time >= b[0][0] and o_time <= b[1][0]]) \
                                 if grouped_pr['bursts'].get(prod) else 0 \
                                 for prod, o_time in zip(row.asin,row.ordinal)])
+    bursts = lambda row: [[[grouped_pr['bursts_ids'][prod] for b in grouped_pr['bursts'][prod] if o_time >= b[0][0] and o_time <= b[1][0]] \
+                                if grouped_pr['bursts'].get(prod) else 0 \
+                                for prod, o_time in zip(row.asin,row.ordinal)]]
     prods_df['burst_count'] = prods_df.apply(calc_count, axis=1)
+    prods_df['burst_ids'] = prods_df.apply(bursts, axis=1)
+    print prods_df
     return prods_df
 
 def burst_ratio(prods_df):
@@ -198,6 +211,7 @@ def compute_features():
 
     grouped_df = grouped_df[:50]
 
+
     # Feature 1: Rating Deviation
     grouped_df = rating_deviation(grouped_df)
 
@@ -206,6 +220,7 @@ def compute_features():
     prods_df = reviewer_bursts(grouped_df, grouped_pr)
     prods_df = burst_ratio(prods_df)
     grouped_df['burst_ratio'] = prods_df['burst_ratio']
+    grouped_df['burst_ids'] = prods_df['burst_ids']
 
     # Feature 3: Text Similarity
     grouped_df = text_similarity(grouped_df)
@@ -217,6 +232,7 @@ def compute_features():
 
     # Feature 6: Burst Time Frames
 
+    # print grouped_df['reviewerID', 'asin', 'rating_deviation', 'burst_ratio', 'similarity_index', 'avg_helpfulness']
     return grouped_df
 
 
