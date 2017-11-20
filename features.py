@@ -158,6 +158,24 @@ def text_similarity(grouped_df):
 
     return grouped_df
 
+# Pranathi's code
+def average_helpfulness(grouped_df):
+    grouped_df["avg_helpfulness"] = 0.0
+    for index, reviewer in grouped_df.iterrows():
+        # print grouped_df.index[i]
+        numer = 0.0
+        denom = 0.0
+        for review in reviewer["helpful"]:
+            nums = review.split(",")
+            numer += int(nums[0][1:])
+            denom += int(nums[1][:-1])
+        if denom <= 1:
+            avg_helpfulness = 0.0
+        else:
+            avg_helpfulness = numer/denom
+        grouped_df.ix[index, 'avg_helpfulness'] = avg_helpfulness
+    return grouped_df
+
 def compute_features():
     csv_file = "./raw_data.csv"
 
@@ -190,9 +208,10 @@ def compute_features():
     # Feature 4: List of products : grouped_df["products"]
 
     # Feature 5: Average helpfulness
+    grouped_df = average_helpfulness(grouped_df)
 
     # Feature 6: Burst Time Frames
-    return grouped_df
+    return grouped_df['burst_ratio', 'similarity_index', 'asin', 'avg_helpfulness', 'burst_ratio']
 
 
 if __name__ == '__main__':
