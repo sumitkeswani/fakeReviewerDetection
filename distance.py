@@ -8,7 +8,7 @@ def heurtistic_1(reviewers_df):
     return count_common_products
 
 # Cosine Similarity
-def heurtistic_2(reviewers_df):
+def heurtistic_2(reviewers_df, graph_df):
     reviewers_df.reset_index(level=0, inplace=True)
     rowiter = reviewers_df.iterrows()
     similarity_list = []
@@ -32,7 +32,7 @@ def heurtistic_2(reviewers_df):
             reviwer_pair.append(AB / (A ** 0.5) * (B ** 0.5))
             similarity_list.append(reviwer_pair)
 
-    graph_df['similarity'] = pd.DataFrame(similarity_list)
+    graph_df = pd.DataFrame(similarity_list)
     return graph_df
 
 
@@ -42,8 +42,9 @@ def heurtistic_3():
 
 def compute_distance(reviewers_df):
     #graph_df with reviewer_1, reviewer_2 and h_1 added
-    # graph_df = heurtistic_1(reviewers_df)
-    graph_df = heurtistic_2(reviewers_df)
+    graph_df = heurtistic_1(reviewers_df)
+    graph_df = heurtistic_2(reviewers_df, graph_df)
+    return graph_df
 
 
 if __name__ == '__main__':

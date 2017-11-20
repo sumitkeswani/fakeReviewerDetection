@@ -193,27 +193,29 @@ def compute_features():
         if (col == "reviewerID"): continue
         grouped_df[col] = music_df.groupby("reviewerID")[col].apply(list)
 
-    grouped_df = grouped_df[:50]
-    print productFeature(grouped_df)
+    # Reviewer ID not needed as it is in index
+    grouped_df.drop('reviewerID', axis=1, inplace=True)
 
-    # # Feature 1: Rating Deviation
-    # grouped_df = rating_deviation(grouped_df)
-    #
-    # # Feature 2: Burst Review Ratio
-    # grouped_pr = kde(grouped_df)
-    # prods_df = reviewer_bursts(grouped_df, grouped_pr)
-    # prods_df = burst_ratio(prods_df)
-    # grouped_df['burst_ratio'] = prods_df['burst_ratio']
-    #
-    # # Feature 3: Text Similarity
-    # grouped_df = text_similarity(grouped_df)
-    #
-    # # Feature 4: List of products : grouped_df["products"]
-    #
-    # # Feature 5: Average helpfulness
-    # grouped_df = average_helpfulness(grouped_df)
-    #
-    # # Feature 6: Burst Time Frames
+    grouped_df = grouped_df[:50]
+
+    # Feature 1: Rating Deviation
+    grouped_df = rating_deviation(grouped_df)
+
+    # Feature 2: Burst Review Ratio
+    grouped_pr = kde(grouped_df)
+    prods_df = reviewer_bursts(grouped_df, grouped_pr)
+    prods_df = burst_ratio(prods_df)
+    grouped_df['burst_ratio'] = prods_df['burst_ratio']
+
+    # Feature 3: Text Similarity
+    grouped_df = text_similarity(grouped_df)
+
+    # Feature 4: List of products : grouped_df["products"]
+
+    # Feature 5: Average helpfulness
+    grouped_df = average_helpfulness(grouped_df)
+
+    # Feature 6: Burst Time Frames
 
     return grouped_df
 
