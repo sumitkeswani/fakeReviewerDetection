@@ -2,16 +2,9 @@ from features import *
 
 
 # TODO : Distance should be 1 - computation as higher values of heuristics indicate closeness,
-# uncomment code once bursts_ids are correctly done
-
-# Common List of Products
-def heurtistic_1(reviewers_df):
-    count_common_products = productFeature(reviewers_df)
-    count_common_products.columns = ["reviewer_1", "reviewer_2", "h_1"]
-    return count_common_products
 
 # Cosine Similarity
-def heurtistic_1_and_2(reviewers_df):
+def heurtistics(reviewers_df):
     reviewers_df.reset_index(level=0, inplace=True)
     rowiter = reviewers_df.iterrows()
     similarity_list = []
@@ -21,13 +14,13 @@ def heurtistic_1_and_2(reviewers_df):
         for index_reviewer2, row_reviewer2 in nextrowiter:
             commonelem = list(set(row_reviewer1['asin']).intersection(set(row_reviewer2['asin'])))
             unionelem = list(set(row_reviewer1['asin']).union(set(row_reviewer2['asin'])))
-            # commonelem_burst = list(set(row_reviewer1['burst_ids']).intersection(set(row_reviewer2['burst_ids'])))
-            # unionelem = list(set(row_reviewer1['burst_ids']).union(set(row_reviewer2['burst_ids'])))
+            commonelem_burst = list(set(row_reviewer1['burst_ids']).intersection(set(row_reviewer2['burst_ids'])))
+            unionelem_burst = list(set(row_reviewer1['burst_ids']).union(set(row_reviewer2['burst_ids'])))
             reviwer_pair = []
             reviwer_pair.append(row_reviewer1['reviewerID'])
             reviwer_pair.append(row_reviewer2['reviewerID'])
             reviwer_pair.append(len(list(commonelem))/len(unionelem))  # ,commonelem[0])
-            # reviwer_pair.append(len(list(commonelem_burst)/len(unionelem))
+            reviwer_pair.append(len(list(commonelem_burst))/len(unionelem_burst))
 
             AB = reviewers_df.ix[index_reviewer1,'burst_ratio'] * reviewers_df.ix[index_reviewer2,'burst_ratio'] \
             + reviewers_df.ix[index_reviewer1, 'similarity_index'] * reviewers_df.ix[index_reviewer2, 'similarity_index'] \
@@ -44,22 +37,20 @@ def heurtistic_1_and_2(reviewers_df):
             similarity_list.append(reviwer_pair)
 
     graph_df = pd.DataFrame(similarity_list)
-    graph_df.columns = ['reviewer_1', 'reviewer_2', 'common_products', 'numerical_similarity' ]
+    graph_df.columns = ['reviewer_1', 'reviewer_2', 'common_products', 'common_bursts', 'numerical_similarity' ]
     return graph_df
 
 
-# Common Burst Time
-def heurtistic_3():
-    pass
-
-def compute_distance(reviewers_df, alpha, beta):
+def compute_distance(reviewers_df, alpha, beta, gamma):
     #graph_df with reviewer_1, reviewer_2 and h_1 added
-    graph_df = heurtistic_1_and_2(reviewers_df)
-    graph_df['final_distance'] = ((alpha * graph_df['common_products']) + (beta * graph_df['numerical_similarity'])) / (alpha + beta)
+    graph_df = heurtistics(reviewers_df)
+    graph_df['final_distance'] = ((alpha * graph_df['common_products']) + \
+                                  (beta * graph_df['common_bursts']) + \
+                                  (gamma * graph_df['numerical_similarity'])) / (alpha + beta + gamma)
     return graph_df
 
 
 if __name__ == '__main__':
     reviewers_df = compute_features()
-    graph_df = compute_distance(reviewers_df, 1, 1)
+    graph_df = compute_distance(reviewers_df, 1, 1, 1)
     print graph_df

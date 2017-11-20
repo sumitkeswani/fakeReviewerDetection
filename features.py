@@ -104,11 +104,15 @@ def reviewer_bursts(grouped_df, grouped_pr):
     calc_count = lambda row: sum([sum([1 for b in grouped_pr['bursts'][prod] if o_time >= b[0][0] and o_time <= b[1][0]]) \
                                 if grouped_pr['bursts'].get(prod) else 0 \
                                 for prod, o_time in zip(row.asin,row.ordinal)])
-    bursts = lambda row: [[[grouped_pr['bursts_ids'][prod] for b in grouped_pr['bursts'][prod] if o_time >= b[0][0] and o_time <= b[1][0]] \
-                                if grouped_pr['bursts'].get(prod) else 0 \
-                                for prod, o_time in zip(row.asin,row.ordinal)]]
-    prods_df['burst_count'] = prods_df.apply(calc_count, axis=1)
+
+    #TODO: @Mugdha please verify the code below
+    bursts = lambda row: filter(None, ([next((b_id for b, b_id \
+                        in zip(grouped_pr['bursts'][prod], grouped_pr['bursts_ids'][prod]) \
+                        if o_time >= b[0][0] and o_time <= b[1][0]), None) \
+                        if grouped_pr['bursts'].get(prod) else None for prod, o_time in zip(row.asin,row.ordinal)]))
     prods_df['burst_ids'] = prods_df.apply(bursts, axis=1)
+    prods_df['burst_count'] = prods_df.apply(calc_count, axis=1)
+
     return prods_df
 
 def burst_ratio(prods_df):
@@ -208,7 +212,7 @@ def compute_features():
     # Reviewer ID not needed as it is in index
     grouped_df.drop('reviewerID', axis=1, inplace=True)
 
-    grouped_df = grouped_df[:50]
+    grouped_df = grouped_df[:10]
 
 
     # Feature 1: Rating Deviation
@@ -217,6 +221,7 @@ def compute_features():
     # Feature 2: Burst Review Ratio
     grouped_pr = kde(grouped_df)
     prods_df = reviewer_bursts(grouped_df, grouped_pr)
+
     prods_df = burst_ratio(prods_df)
     grouped_df['burst_ratio'] = prods_df['burst_ratio']
     grouped_df['burst_ids'] = prods_df['burst_ids']
