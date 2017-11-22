@@ -5,7 +5,7 @@ from features import *
 
 # Cosine Similarity
 def heurtistics(reviewers_df):
-    reviewers_df.reset_index(level=0, inplace=True)
+    reviewers_df.reset_index(inplace = True)
     rowiter = reviewers_df.iterrows()
     similarity_list = []
     total = []
@@ -30,10 +30,11 @@ def heurtistics(reviewers_df):
             A = reviewers_df.ix[index_reviewer1,'burst_ratio']**2 + reviewers_df.ix[index_reviewer1,'rating_deviation']**2 \
                 + reviewers_df.ix[index_reviewer1, 'similarity_index']**2 + reviewers_df.ix[index_reviewer1,'avg_helpfulness']**2
 
+
             B = reviewers_df.ix[index_reviewer2, 'burst_ratio']**2 + reviewers_df.ix[index_reviewer2, 'rating_deviation']**2 \
                 + reviewers_df.ix[index_reviewer2, 'similarity_index']**2 + reviewers_df.ix[index_reviewer2, 'avg_helpfulness']**2
 
-            reviwer_pair.append(AB / (A ** 0.5) * (B ** 0.5))
+            reviwer_pair.append(AB / ((A ** 0.5) * (B ** 0.5)))
             similarity_list.append(reviwer_pair)
 
     graph_df = pd.DataFrame(similarity_list)
@@ -53,4 +54,4 @@ def compute_distance(reviewers_df, alpha, beta, gamma):
 if __name__ == '__main__':
     reviewers_df = compute_features()
     graph_df = compute_distance(reviewers_df, 1, 1, 1)
-    print graph_df
+    graph_df.to_csv('./final_file.csv', sep = '\t')
