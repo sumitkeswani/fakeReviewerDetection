@@ -12,15 +12,24 @@ def heurtistics(reviewers_df):
     for index_reviewer1, row_reviewer1 in rowiter:
         nextrowiter = reviewers_df.iloc[index_reviewer1 + 1:, :].iterrows()
         for index_reviewer2, row_reviewer2 in nextrowiter:
-            commonelem = list(set(row_reviewer1['asin']).intersection(set(row_reviewer2['asin'])))
-            unionelem = list(set(row_reviewer1['asin']).union(set(row_reviewer2['asin'])))
-            commonelem_burst = list(set(row_reviewer1['burst_ids']).intersection(set(row_reviewer2['burst_ids'])))
-            unionelem_burst = list(set(row_reviewer1['burst_ids']).union(set(row_reviewer2['burst_ids'])))
-            reviwer_pair = []
-            reviwer_pair.append(row_reviewer1['reviewerID'])
-            reviwer_pair.append(row_reviewer2['reviewerID'])
-            reviwer_pair.append(len(list(commonelem))/len(unionelem))  # ,commonelem[0])
-            reviwer_pair.append(len(list(commonelem_burst))/len(unionelem_burst))
+            try:
+                commonelem = list(set(row_reviewer1['asin']).intersection(set(row_reviewer2['asin'])))
+                unionelem = list(set(row_reviewer1['asin']).union(set(row_reviewer2['asin'])))
+                commonelem_burst = list(set(row_reviewer1['burst_ids']).intersection(set(row_reviewer2['burst_ids'])))
+                unionelem_burst = list(set(row_reviewer1['burst_ids']).union(set(row_reviewer2['burst_ids'])))
+                reviwer_pair = []
+                reviwer_pair.append(row_reviewer1['reviewerID'])
+                reviwer_pair.append(row_reviewer2['reviewerID'])
+                if len(unionelem):
+                    reviwer_pair.append(float(len(list(commonelem)))/len(unionelem))  # ,commonelem[0])
+                else:
+                    reviwer_pair.append(0)
+                if len(unionelem_burst):
+                    reviwer_pair.append(float(len(list(commonelem_burst)))/len(unionelem_burst))
+                else:
+                    reviwer_pair.append(0)
+            except:
+                import pdb; pdb.set_trace()
 
             AB = reviewers_df.ix[index_reviewer1,'burst_ratio'] * reviewers_df.ix[index_reviewer2,'burst_ratio'] \
             + reviewers_df.ix[index_reviewer1, 'similarity_index'] * reviewers_df.ix[index_reviewer2, 'similarity_index'] \

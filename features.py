@@ -10,6 +10,7 @@ from datetime import datetime
 from difflib import SequenceMatcher
 
 average = lambda n : sum(n) / len(n)
+average2 = lambda n : sum(n) / len(n) if len(n) > 0 else 0
 
 def kde(grouped_df):
     product_ratings_list = []
@@ -167,8 +168,8 @@ def rating_deviation(grouped_df):
     return grouped_df
 
 def text_similarity(grouped_df):
-    reviews_df  = grouped_df['reviewText'].to_frame()
-    sim =  lambda row: average([SequenceMatcher(None, r1, r2).ratio() for r1 in row.reviewText for r2 in row.reviewText\
+    reviews_df  = grouped_df['summary'].to_frame()
+    sim =  lambda row: average2([SequenceMatcher(None, r1, r2).ratio() for r1 in row.summary for r2 in row.summary\
                         if r1 != r2])
     reviews_df['similarity_index'] = reviews_df.apply(sim, axis =1)
     grouped_df['similarity_index'] = reviews_df['similarity_index']
@@ -212,12 +213,13 @@ def compute_features():
     # Reviewer ID not needed as it is in index
     grouped_df.drop('reviewerID', axis=1, inplace=True)
 
-    grouped_df = grouped_df[:10]
+    #grouped_df = grouped_df[:6000]
 
-
+    print "Calculating rating deviation"
     # Feature 1: Rating Deviation
     grouped_df = rating_deviation(grouped_df)
 
+    print "Calculating Burst Review ratio"
     # Feature 2: Burst Review Ratio
     grouped_pr = kde(grouped_df)
     prods_df = reviewer_bursts(grouped_df, grouped_pr)
@@ -226,11 +228,13 @@ def compute_features():
     grouped_df['burst_ratio'] = prods_df['burst_ratio']
     grouped_df['burst_ids'] = prods_df['burst_ids']
 
+    print "Calculating text similarity"
     # Feature 3: Text Similarity
     grouped_df = text_similarity(grouped_df)
 
     # Feature 4: List of products : grouped_df["products"]
 
+    print "calculating Average helpfulness"
     # Feature 5: Average helpfulness
     grouped_df = average_helpfulness(grouped_df)
 
