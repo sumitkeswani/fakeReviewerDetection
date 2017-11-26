@@ -195,7 +195,7 @@ def average_helpfulness(grouped_df):
     return grouped_df
 
 def compute_features():
-    csv_file = "./raw_data.csv"
+    csv_file = "./raw_data_elec.csv"
 
     # input dataframe
     music_df = pd.DataFrame.from_csv(csv_file, sep="\t")
