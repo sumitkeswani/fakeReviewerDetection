@@ -47,7 +47,7 @@ with open(fileName, 'rb') as f:
 num_of_reviewers = len(reviewer2id)
 reviewers = list(reviewer2id.keys())
 random.shuffle(reviewers)
-reviewers = reviewers[:num_of_reviewers/10]
+reviewers = reviewers[:num_of_reviewers/5]
 
 for i in reviewers:
 	graph.observe(str(reviewer2id[i]), 2)
