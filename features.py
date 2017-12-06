@@ -8,6 +8,8 @@ from sklearn.neighbors.kde import KernelDensity
 import numpy as np
 from datetime import datetime
 from difflib import SequenceMatcher
+import matplotlib.pyplot as plt
+from scipy.stats import norm
 
 average = lambda n : sum(n) / len(n)
 average2 = lambda n : sum(n) / len(n) if len(n) > 0 else 0
@@ -33,6 +35,7 @@ def kde(grouped_df):
     kde_list = []
     p_id = []
 
+    count = 0
     # Calculating kde for all dates in all products
     for index, row in grouped_pr.iterrows():
         p_id.append(index)
@@ -43,7 +46,18 @@ def kde(grouped_df):
         date = np.array(grouped_pr.ix[index, 'date'])
         #Fittind KDE
         kde = KernelDensity(kernel='gaussian', bandwidth=1).fit(date)
-        kde_list.append(kde.score_samples(date))
+        log_dens = kde.score_samples(date)
+        kde_list.append(log_dens)
+
+        if count == 1000:
+            print "Plotting"
+            ax = pd.DataFrame(np.array(grouped_pr.ix[index, 'date'])).plot.kde(title="KDE Plot", legend=False)
+            ax.set_xlabel("Unixtime")
+            ax.set_ylabel("Density")
+            plt.show()
+
+        count += 1
+
 
     #Converting to dataframe : Each columns is a product_id with list of kdes for each sorted date
     kde_df = (pd.DataFrame(kde_list)).transpose()
@@ -195,7 +209,7 @@ def average_helpfulness(grouped_df):
     return grouped_df
 
 def compute_features():
-    csv_file = "./raw_data_elec.csv"
+    csv_file = "./raw_data.csv"
 
     # input dataframe
     music_df = pd.DataFrame.from_csv(csv_file, sep="\t")
@@ -217,7 +231,7 @@ def compute_features():
 
     print "Calculating rating deviation"
     # Feature 1: Rating Deviation
-    grouped_df = rating_deviation(grouped_df)
+    # grouped_df = rating_deviation(grouped_df)
 
     print "Calculating Burst Review ratio"
     # Feature 2: Burst Review Ratio
