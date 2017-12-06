@@ -1,6 +1,9 @@
 # fakeReviewerDetection
 A fake reviewer detection system using Belief propagation
 
+Dependencies:
+numpy
+sumproduct
 
 features.py -> function kde():
   #input : grouped_df -> reviewer wise grouped data :
