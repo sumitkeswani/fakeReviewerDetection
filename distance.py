@@ -63,4 +63,4 @@ def compute_distance(reviewers_df, alpha, beta, gamma):
 if __name__ == '__main__':
     reviewers_df = compute_features()
     graph_df = compute_distance(reviewers_df, 1, 1, 1)
-    graph_df.to_csv('./final_file.csv', sep = '\t')
+    graph_df.to_csv('./distances.csv', sep = '\t')
