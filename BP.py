@@ -4,8 +4,8 @@ import random
 from sumproduct import Variable, Factor, FactorGraph
 
 
-numOfFactors = 1	#distance only!
-fileName = 'sample.csv'
+numOfFactors = 2	#distance only!
+fileName = 'distances.csv'
 
 # init Factor Graph
 graph = FactorGraph(silent=False)
@@ -53,13 +53,6 @@ for i in reviewers:
 	graph.observe(str(reviewer2id[i]), 2)
 
 graph.compute_marginals(max_iter=500, tolerance=1e-4)
-
-# count = 0
-# for i in xrange(num_of_reviewers):
-# 		print str(i) + ', ' + id2reviewer[i] + ', ' + str(graph.nodes[str(i)].marginal())
-# 		if (graph.nodes[str(i)].marginal()[0] < 0.3):
-# 			count += 1
-
 
 with open('output.csv', 'w') as f:
 	for i in xrange(num_of_reviewers):
